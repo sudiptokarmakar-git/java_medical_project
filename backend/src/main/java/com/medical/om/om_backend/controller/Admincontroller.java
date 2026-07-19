@@ -136,8 +136,9 @@ public class Admincontroller {
 
     @PostMapping("/inventory")
     public ResponseEntity<?> createInventory(@RequestBody InventoryDto request) {
+        Medicine medicine = medicineRepository.findById(request.getMedicineId()).orElseThrow(()->new RuntimeException("Medicine not found"));
         Inventory inventory = new Inventory();
-        inventory.setMedicine_name(request.getMedicine_name());
+        inventory.setMedicine(medicine);
         inventory.setBatch(request.getBatch());
         inventory.setAvailable_qty(request.getAvailable_qty());
         inventory.setSupplier(request.getSupplier());
@@ -146,8 +147,10 @@ public class Admincontroller {
 
     @PutMapping("/inventory/{id}")
     public ResponseEntity<?> updateInventory(@PathVariable Long id, @RequestBody InventoryDto request) {
+        Medicine medicine = medicineRepository.findById(request.getMedicineId())
+                .orElseThrow(() -> new RuntimeException("Medicine not found"));
         return inventoryRepository.findById(id).map(inventory -> {
-            inventory.setMedicine_name(request.getMedicine_name());
+            inventory.setMedicine(medicine);
             inventory.setBatch(request.getBatch());
             inventory.setAvailable_qty(request.getAvailable_qty());
             inventory.setSupplier(request.getSupplier());
@@ -203,8 +206,10 @@ public class Admincontroller {
 
     @PostMapping("/sales")
     public ResponseEntity<?> createSalesPurchase(@RequestBody SalesPurchaseDto request) {
+        Medicine medicine = medicineRepository.findById(request.getMedicineId())
+                .orElseThrow(() -> new RuntimeException("Medicine not found"));
         SalesPurchase record = new SalesPurchase();
-        record.setMedicineName(request.getMedicineName());
+        record.setMedicine(medicine);
         record.setQuantity(request.getQuantity());
         record.setAmount(request.getAmount());
         record.setDate(request.getDate());
@@ -214,8 +219,10 @@ public class Admincontroller {
 
     @PutMapping("/sales/{id}")
     public ResponseEntity<?> updateSalesPurchase(@PathVariable Long id, @RequestBody SalesPurchaseDto request) {
+        Medicine medicine = medicineRepository.findById(request.getMedicineId())
+                .orElseThrow(() -> new RuntimeException("Medicine not found"));
         return salesPurchaseRepository.findById(id).map(record -> {
-            record.setMedicineName(request.getMedicineName());
+            record.setMedicine(medicine);
             record.setQuantity(request.getQuantity());
             record.setAmount(request.getAmount());
             record.setDate(request.getDate());

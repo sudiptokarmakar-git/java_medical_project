@@ -28,6 +28,7 @@ public class Medicine {
     private LocalDate expiration_date;
 
     @Column(nullable = true)
-    private String category;
+    @Enumerated(EnumType.STRING)
+    private Catagories category;
 
 }

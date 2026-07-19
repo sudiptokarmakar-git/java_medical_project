@@ -15,8 +15,9 @@ public class SalesPurchase {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(nullable = false)
-    private String medicineName;
+    @ManyToOne
+    @JoinColumn(name = "medicine_id",nullable = false)
+    private Medicine medicine;
 
     @Column(nullable = false)
     private int quantity;

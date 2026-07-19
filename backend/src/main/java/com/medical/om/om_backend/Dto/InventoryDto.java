@@ -6,7 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class InventoryDto {
-    private String medicine_name;
+    private Long medicineId;
     private String batch;
     private int available_qty;
     private String supplier;

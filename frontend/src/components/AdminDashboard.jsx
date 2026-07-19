@@ -103,7 +103,7 @@ export default function AdminDashboard({ user, onLogout }) {
                 <ul className="space-y-3">
                   {stats.recentInventoryItems.length > 0 ? stats.recentInventoryItems.map((item) => (
                     <li key={item.id} className="rounded-2xl border border-slate-100 p-3">
-                      <p className="font-semibold text-slate-900">{item.medicine_name}</p>
+                      <p className="font-semibold text-slate-900">{item.medicine?.name}</p>
                       <p className="text-sm text-slate-500">Qty: {item.available_qty} • Supplier: {item.supplier}</p>
                     </li>
                   )) : <li className="text-sm text-slate-500">No inventory records found.</li>}
@@ -217,7 +217,7 @@ export default function AdminDashboard({ user, onLogout }) {
                 <span className="w-9 h-9 rounded-xl bg-white/10 grid place-items-center group-hover:bg-indigo-500/30 transition">
                   <span className="text-lg">{item.icon}</span>
                 </span>
-                <span className="text-xl font-extrabold mt-4 text-emerald-600">{item.label}</span>
+                <span className="text-xl font-extrabold mt--2 text-emerald-600">{item.label}</span>
               </button>
             ))}
           </nav>

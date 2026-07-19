@@ -79,8 +79,7 @@ export function UsersView() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-semibold text-slate-900">Users</h3>
-          <p className="text-sm text-slate-500">Manage accounts, roles, and access.</p>
+          <h3 className="text-xl font-semibold text-slate-900">Add Users➕</h3>
         </div>
       </div>
 
@@ -104,7 +103,7 @@ export function UsersView() {
           )}
         </div>
       </form>
-
+        <div className="text-xl font-semibold text-slate-900 heading">List of Users</div>
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
         <table className="min-w-full text-sm">
           <thead className="bg-slate-50 text-left text-slate-600">
@@ -232,7 +231,20 @@ export function MedicinesView({ role = 'ADMIN' }) {
           <input className="rounded-xl border border-slate-200 px-3 py-2" placeholder="Batch" value={form.batch} onChange={(e) => setForm({ ...form, batch: e.target.value })} required />
           <input className="rounded-xl border border-slate-200 px-3 py-2" type="date" value={form.manufacturing_date} onChange={(e) => setForm({ ...form, manufacturing_date: e.target.value })} required />
           <input className="rounded-xl border border-slate-200 px-3 py-2" type="date" value={form.expiration_date} onChange={(e) => setForm({ ...form, expiration_date: e.target.value })} required />
-          <input className="rounded-xl border border-slate-200 px-3 py-2 md:col-span-2" placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required />
+{/*           <input className="rounded-xl border border-slate-200 px-3 py-2 md:col-span-2" placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required /> */}
+          <select className="rounded-xl border border-slate-200 px-3 py-2 md:col-span-2" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required>
+            <option value="">Select category</option>
+            <option value="ANTIBIOTIC">Antibiotic</option>
+            <option value="PAINKILLER">Painkiller</option>
+            <option value="ANTIVIRAL">Antiviral</option>
+            <option value="ANTIFUNGAL">Antifungal</option>
+            <option value="VITAMIN_SUPPLEMENT">Vitamin / Supplement</option>
+            <option value="CARDIOVASCULAR">Cardiovascular</option>
+            <option value="DIABETES">Diabetes</option>
+            <option value="RESPIRATORY">Respiratory</option>
+            <option value="DERMATOLOGICAL">Dermatological</option>
+            <option value="OTHER">Other</option>
+          </select>
           <div className="md:col-span-2 flex gap-2">
             <button type="submit" className="flex-1 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white">
               {editingId ? 'Update Medicine' : 'Add Medicine'}
@@ -279,7 +291,8 @@ export function MedicinesView({ role = 'ADMIN' }) {
 
 export function InventoryView({ role = 'ADMIN' }) {
   const [items, setItems] = useState([]);
-  const [form, setForm] = useState({ medicine_name: '', batch: '', available_qty: 0, supplier: '' });
+  const [medicines, setMedicines] = useState([]);
+  const [form, setForm] = useState({ medicineId: '', batch: '', available_qty: 0, supplier: '' });
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
 
@@ -303,19 +316,31 @@ export function InventoryView({ role = 'ADMIN' }) {
       .finally(() => setLoading(false));
   };
 
+  const loadMedicines = () => {
+    const token = localStorage.getItem('om_token');
+    if (!token) return;
+    fetch('http://localhost:8080/api/admin/medicines', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => setMedicines(data))
+      .catch((err) => console.error('Medicine list load error:', err));
+  };
+
   useEffect(() => {
     loadInventory();
+    loadMedicines();
   }, [role]);
 
   const handleSave = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('om_token');
     if (!token) return;
-    
+
     const url = editingId
       ? `http://localhost:8080/api/admin/inventory/${editingId}`
       : 'http://localhost:8080/api/admin/inventory';
-      
+
     const method = editingId ? 'PUT' : 'POST';
 
     const response = await fetch(url, {
@@ -324,7 +349,7 @@ export function InventoryView({ role = 'ADMIN' }) {
       body: JSON.stringify(form),
     });
     if (response.ok) {
-      setForm({ medicine_name: '', batch: '', available_qty: 0, supplier: '' });
+      setForm({ medicineId: '', batch: '', available_qty: 0, supplier: '' });
       setEditingId(null);
       loadInventory();
     }
@@ -333,7 +358,7 @@ export function InventoryView({ role = 'ADMIN' }) {
   const handleEdit = (item) => {
     setEditingId(item.id);
     setForm({
-      medicine_name: item.medicine_name,
+      medicineId: item.medicine?.id || '',
       batch: item.batch,
       available_qty: item.available_qty,
       supplier: item.supplier,
@@ -342,7 +367,7 @@ export function InventoryView({ role = 'ADMIN' }) {
 
   const cancelEdit = () => {
     setEditingId(null);
-    setForm({ medicine_name: '', batch: '', available_qty: 0, supplier: '' });
+    setForm({ medicineId: '', batch: '', available_qty: 0, supplier: '' });
   };
 
   const handleDelete = async (id) => {
@@ -356,16 +381,20 @@ export function InventoryView({ role = 'ADMIN' }) {
     if (response.ok) loadInventory();
   };
 
-  // Both Admin and Pharmacist are allowed to manage inventory
   const canManage = role === 'ADMIN' || role === 'PHARMACIST';
 
   return (
     <div className="space-y-4">
       <h3 className="text-xl font-semibold text-slate-900">Inventory</h3>
-      
+
       {canManage && (
         <form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white p-4 grid gap-3 md:grid-cols-2">
-          <input className="rounded-xl border border-slate-200 px-3 py-2" placeholder="Medicine Name" value={form.medicine_name} onChange={(e) => setForm({ ...form, medicine_name: e.target.value })} required />
+          <select className="rounded-xl border border-slate-200 px-3 py-2" value={form.medicineId} onChange={(e) => setForm({ ...form, medicineId: Number(e.target.value) })} required>
+            <option value="">Select medicine</option>
+            {medicines.map((m) => (
+              <option key={m.id} value={m.id}>{m.name} ({m.batch})</option>
+            ))}
+          </select>
           <input className="rounded-xl border border-slate-200 px-3 py-2" placeholder="Batch" value={form.batch} onChange={(e) => setForm({ ...form, batch: e.target.value })} required />
           <input className="rounded-xl border border-slate-200 px-3 py-2" type="number" placeholder="Available Qty" value={form.available_qty} onChange={(e) => setForm({ ...form, available_qty: Number(e.target.value) })} required />
           <input className="rounded-xl border border-slate-200 px-3 py-2" placeholder="Supplier" value={form.supplier} onChange={(e) => setForm({ ...form, supplier: e.target.value })} required />
@@ -389,7 +418,7 @@ export function InventoryView({ role = 'ADMIN' }) {
           {items.length > 0 ? items.map((item) => (
             <div key={item.id} className="rounded-2xl border border-slate-200 bg-white p-4 flex flex-col justify-between">
               <div>
-                <p className="font-semibold text-slate-900">{item.medicine_name}</p>
+                <p className="font-semibold text-slate-900">{item.medicine?.name}</p>
                 <p className="text-sm text-slate-600">Batch: {item.batch}</p>
                 <p className="text-sm text-slate-600">Qty: {item.available_qty}</p>
                 <p className="text-sm text-slate-600">Supplier: {item.supplier}</p>
@@ -407,7 +436,6 @@ export function InventoryView({ role = 'ADMIN' }) {
     </div>
   );
 }
-
 export function SuppliersView({ role = 'ADMIN' }) {
   const [suppliers, setSuppliers] = useState([]);
   const [form, setForm] = useState({ name: '', address: '', joinedfrom: '', contact: '', email: '' });
@@ -540,7 +568,8 @@ export function SuppliersView({ role = 'ADMIN' }) {
 
 export function SalesView({ role = 'ADMIN' }) {
   const [records, setRecords] = useState([]);
-  const [form, setForm] = useState({ medicineName: '', quantity: 0, amount: 0.0, date: '', type: 'SALE' });
+  const [medicines, setMedicines] = useState([]);
+  const [form, setForm] = useState({ medicineId: '', quantity: 0, amount: 0.0, date: '', type: 'SALE' });
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
 
@@ -562,20 +591,31 @@ export function SalesView({ role = 'ADMIN' }) {
       .catch((err) => console.error('Sales records load error:', err))
       .finally(() => setLoading(false));
   };
+  const loadMedicines = () => {                             // ← add this
+      const token = localStorage.getItem('om_token');
+      if (!token) return;
+      fetch('http://localhost:8080/api/admin/medicines', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => res.json())
+        .then((data) => setMedicines(data))
+        .catch((err) => console.error('Medicine list load error:', err));
+    };
 
   useEffect(() => {
     loadSalesPurchases();
+    loadMedicines();
   }, []);
 
   const handleSave = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('om_token');
     if (!token) return;
-    
+
     const url = editingId
       ? `http://localhost:8080/api/admin/sales/${editingId}`
       : 'http://localhost:8080/api/admin/sales';
-      
+
     const method = editingId ? 'PUT' : 'POST';
 
     const response = await fetch(url, {
@@ -583,9 +623,9 @@ export function SalesView({ role = 'ADMIN' }) {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(form),
     });
-    
+
     if (response.ok) {
-      setForm({ medicineName: '', quantity: 0, amount: 0.0, date: '', type: 'SALE' });
+      setForm({ medicineId: '', quantity: 0, amount: 0.0, date: '', type: 'SALE' });
       setEditingId(null);
       loadSalesPurchases();
     }
@@ -594,7 +634,7 @@ export function SalesView({ role = 'ADMIN' }) {
   const handleEdit = (record) => {
     setEditingId(record.id);
     setForm({
-      medicineName: record.medicineName,
+      medicineId: record.medicine?.id || '',
       quantity: record.quantity,
       amount: record.amount,
       date: record.date || '',
@@ -604,7 +644,7 @@ export function SalesView({ role = 'ADMIN' }) {
 
   const cancelEdit = () => {
     setEditingId(null);
-    setForm({ medicineName: '', quantity: 0, amount: 0.0, date: '', type: 'SALE' });
+    setForm({ medicineId: '', quantity: 0, amount: 0.0, date: '', type: 'SALE' });
   };
 
   const handleDelete = async (id) => {
@@ -631,7 +671,13 @@ export function SalesView({ role = 'ADMIN' }) {
 
       {canManage && (
         <form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white p-4 grid gap-3 md:grid-cols-2">
-          <input className="rounded-xl border border-slate-200 px-3 py-2" placeholder="Medicine Name" value={form.medicineName} onChange={(e) => setForm({ ...form, medicineName: e.target.value })} required />
+{/*           <input className="rounded-xl border border-slate-200 px-3 py-2" placeholder="Medicine Name" value={form.medicineName} onChange={(e) => setForm({ ...form, medicineName: e.target.value })} required /> */}
+          <select className="rounded-xl border border-slate-200 px-3 py-2" value={form.medicineId} onChange={(e) => setForm({ ...form, medicineId: Number(e.target.value) })} required>
+            <option value="">Select medicine</option>
+            {medicines.map((m) => (
+              <option key={m.id} value={m.id}>{m.name} ({m.batch})</option>
+            ))}
+          </select>
           <input className="rounded-xl border border-slate-200 px-3 py-2" type="number" placeholder="Quantity" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })} required />
           <input className="rounded-xl border border-slate-200 px-3 py-2" type="number" step="0.01" placeholder="Amount ($)" value={form.amount} onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) })} required />
           <input className="rounded-xl border border-slate-200 px-3 py-2" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required />

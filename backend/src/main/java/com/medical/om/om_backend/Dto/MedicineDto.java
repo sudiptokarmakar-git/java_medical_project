@@ -1,5 +1,6 @@
 package com.medical.om.om_backend.Dto;
 
+import com.medical.om.om_backend.entity.Catagories;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,5 +13,5 @@ public class MedicineDto {
     private String batch;
     private LocalDate manufacturing_date;
     private LocalDate expiration_date;
-    private String category;
+    private Catagories category;
 }

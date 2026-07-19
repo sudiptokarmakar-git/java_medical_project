@@ -13,8 +13,9 @@ public class Inventory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(nullable = false)
-    private String medicine_name;
+    @ManyToOne
+    @JoinColumn(name = "medicine_id",nullable = false)
+    private Medicine medicine;
 
     @Column(nullable = false)
     private String batch;
