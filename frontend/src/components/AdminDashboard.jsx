@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { InventoryView, MedicinesView, SalesView, SuppliersView, UsersView } from './DashboardViews';
+
+const CHART_COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#06b6d4','#f97316','#ec4899','#14b8a6','#eab308'];
 
 export default function AdminDashboard({ user, onLogout }) {
   const navItems = [
@@ -66,7 +69,7 @@ export default function AdminDashboard({ user, onLogout }) {
       default:
         return (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-5 md:gap-6">
               {statCards.map((card) => (
                 <div key={card.title} className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition">
                   <div className={`inline-flex rounded-2xl bg-gradient-to-br ${card.accent} p-3 text-2xl text-white`}>
@@ -78,6 +81,39 @@ export default function AdminDashboard({ user, onLogout }) {
                 </div>
               ))}
             </div>
+
+            {stats.stockByMedicine?.length > 0 && (
+              <div className="grid md:grid-cols-2 gap-5 md:gap-6 mt-6 md:mt-8">
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-bold text-slate-900">Stock Distribution</h2>
+                    <span className="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">{stats.totalStock} units</span>
+                  </div>
+                  <ResponsiveContainer width="100%" height={260}>
+                    <PieChart>
+                      <Pie data={stats.stockByMedicine} cx="50%" cy="50%" outerRadius={90} dataKey="value" label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}>
+                        {stats.stockByMedicine.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-bold text-slate-900">Stock Summary</h2>
+                    <span className="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">{stats.stockByMedicine.length} medicines</span>
+                  </div>
+                  <div className="space-y-3">
+                    {stats.stockByMedicine.slice(0, 8).map((item) => (
+                      <div key={item.name} className="flex items-center justify-between border-b border-slate-50 pb-2 last:border-0">
+                        <span className="text-sm font-medium text-slate-700">{item.name}</span>
+                        <span className="text-sm font-bold text-slate-900">{item.value} units</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="grid lg:grid-cols-3 gap-5 md:gap-6 mt-6 md:mt-8">
               <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">

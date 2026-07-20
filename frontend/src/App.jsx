@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import LoginHelp from './components/LoginHelp'
-import AdminDashboard from './components/AdminDashboard'
-import PharmacistDashboard from './components/PharmacistDashboard'
-import StaffDashboard from './components/StaffDashboard'
+import Dashboard from './components/Dashboard'
 // Base URL for the backend API
 const API_BASE = 'http://localhost:8080/api/auth';
 
@@ -214,25 +212,7 @@ function App() {
 
   const renderDashboard = () => {
     if (!user) return null;
-
-    switch (user.role) {
-      case 'ADMIN':
-        return <AdminDashboard user={user} onLogout={handleLogout} />;
-      case 'PHARMACIST':
-        return <PharmacistDashboard user={user} onLogout={handleLogout} />;
-      case 'STAFF':
-        return <StaffDashboard user={user} onLogout={handleLogout} />;
-      default:
-        return (
-          <div className="dashboard-card">
-            <h2>Portal</h2>
-            <p>Your role is not recognized.</p>
-            <button type="button" className="btn-danger" onClick={handleLogout}>
-              🚪 Log Out
-            </button>
-          </div>
-        );
-    }
+    return <Dashboard user={user} onLogout={handleLogout} />;
   };
 
   return (

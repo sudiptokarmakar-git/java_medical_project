@@ -10,4 +10,6 @@ public class InventoryDto {
     private String batch;
     private int available_qty;
     private String supplier;
+    private String manufacturing_date;
+    private String expiration_date;
 }

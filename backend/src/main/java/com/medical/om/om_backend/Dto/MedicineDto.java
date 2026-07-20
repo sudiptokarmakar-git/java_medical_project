@@ -14,4 +14,5 @@ public class MedicineDto {
     private LocalDate manufacturing_date;
     private LocalDate expiration_date;
     private Catagories category;
+    private String description;
 }

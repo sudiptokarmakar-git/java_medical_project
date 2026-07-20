@@ -18,17 +18,20 @@ public class Medicine {
     @Column(nullable = false,unique = true)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String batch;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDate manufacturing_date;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDate expiration_date;
 
     @Column(nullable = true)
     @Enumerated(EnumType.STRING)
     private Catagories category;
+
+    @Column(length = 1000, nullable = true)
+    private String description;
 
 }
